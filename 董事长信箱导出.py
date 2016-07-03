@@ -1,12 +1,32 @@
-from multiprocessing import Pool
 from bs4 import BeautifulSoup
 import requests
 from selenium import webdriver
 import time
 import pandas as pd
 
+#统计已获取列表
+data1={
+            '标题':['标题','标题'],
+            '来信日期':['标题','标题'],
+            '回复单位':['标题','标题'],
+            '回复日期':['标题','标题'],
+            '来信内容':['标题','标题'],
+            '回复内容':['标题','标题'],
+            'link':['标题','标题'],
+            'id':['标题','标题']
+        }
+df_get=pd.DataFrame(data1,columns=['标题','来信日期','回复单位','回复日期','来信内容','回复内容','link','id'])
+df_get=df_get.drop(1)
+df_get=df_get.drop(0)
 
-def get_info(id):
+path='C:/Users/Administrator/Desktop/董事长信箱解答/董事长信箱记录导出'
+df_previous=pd.read_csv(path+"/董事长信箱.csv", encoding='gbk')
+driver = webdriver.PhantomJS(executable_path=path+"/phantomjs-2.1.1-windows/bin/phantomjs.exe")
+
+df=df_previous['id']
+for i in df.index:
+    id=df[i]
+    print(i,id)
     url='http://192.168.1.235:7001/default/com.dszxx.portal.xxb.LetterDetial.flow?id={}'.format(id)
     wb_data=requests.get(url)
     soup=BeautifulSoup(wb_data.text,'lxml')
@@ -36,41 +56,11 @@ def get_info(id):
         'link':[url,0],
         'id':[id,0]
          }
-        return data
-#统计已获取列表
-data1={
-            '标题':['标题','标题'],
-            '来信日期':['标题','标题'],
-            '回复单位':['标题','标题'],
-            '回复日期':['标题','标题'],
-            '来信内容':['标题','标题'],
-            '回复内容':['标题','标题'],
-            'link':['标题','标题'],
-            'id':['标题','标题']
-        }
-df_get=pd.DataFrame(data1,columns=['标题','来信日期','回复单位','回复日期','来信内容','回复内容','link','id'])
-df_get=df_get.drop(1)
-df_get=df_get.drop(0)
-
-path='C:/Users/Administrator/Desktop/董事长信箱解答/董事长信箱记录导出'
-df_previous=pd.read_csv(path+"/董事长信箱.csv", encoding='gbk')
-driver = webdriver.PhantomJS(executable_path=path+"/phantomjs-2.1.1-windows/bin/phantomjs.exe")
-#num1=input('请输入最新的信箱编码：')
-#num2=input('请输入要查找信件数量：')
-df=df_previous['id']
-for i in df.index:
-    id=df[i]
-    print(i,id)
-    data=get_info(int(id))
+        driver.get_screenshot_as_file(path+'/pic/'+str(id)+'.jpg')
     if data:
         frame=pd.DataFrame(data,columns=['标题','来信日期','回复单位','回复日期','来信内容','回复内容','link','id'])
         frame=frame.drop(1)
         df_get=df_get.append(frame)
 
 driver.quit()
-#df_main=df_get.append(df_previous)
-#df_main.drop_duplicates()
 df_get.to_csv(path+"/董事长信箱1.csv",indes=False)
-
-
-
